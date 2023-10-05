@@ -50,7 +50,9 @@ public sealed class ChatHub : Hub
         string privateGroupName = GetPrivateGroupName(message.From, message.To!);
         await Groups.AddToGroupAsync(Context.ConnectionId, privateGroupName);
         var toConnectionId = _chatService.GetConnectionIdByUser(message.To!);
-
+        await Groups.AddToGroupAsync(toConnectionId, privateGroupName);
+        
+        // opening private chatbox for the other end user
         await Clients.Client(toConnectionId).SendAsync("OpenPrivateChat", message);
     }
 
