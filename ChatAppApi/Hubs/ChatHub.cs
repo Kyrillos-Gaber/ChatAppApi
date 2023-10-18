@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace chatapi.Hubs;
 public sealed class ChatHub : Hub<IChatHub>
 {
-    private const string privateChatGroup = "Come2Chat";
+    private const string chatGroup = "Come2Chat";
     private readonly ChatService _chatService;
 
     public ChatHub(ChatService chatService)
@@ -15,13 +15,13 @@ public sealed class ChatHub : Hub<IChatHub>
 
     public override async Task OnConnectedAsync()
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, privateChatGroup);
+        await Groups.AddToGroupAsync(Context.ConnectionId, chatGroup);
         await Clients.Caller.UserConnected();
     }
 
     public override async Task OnDisconnectedAsync(Exception? ex)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, privateChatGroup);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatGroup);
         var user = _chatService.GetUserByConnectionId(Context.ConnectionId);
         _chatService.RemoveUser(user);
         await DisplayOnlineUsers();
@@ -37,12 +37,12 @@ public sealed class ChatHub : Hub<IChatHub>
     private async Task DisplayOnlineUsers()
     {
         var onlineUsers = _chatService.GetOnlineUsers();
-        await Clients.Groups(privateChatGroup).OnlineUsers(onlineUsers);
+        await Clients.Groups(chatGroup).OnlineUsers(onlineUsers);
     }
 
     public async Task ReceiveMessage(MessageDto message)
     {
-        await Clients.Group(privateChatGroup).NewMessage(message);
+        await Clients.Group(chatGroup).NewMessage(message);
     }
 
     public async Task CreatePrivateChat(MessageDto message)
